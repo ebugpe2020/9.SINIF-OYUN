@@ -1,0 +1,49 @@
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #211b16;
+  color: #f1e2c6;
+  font-family: Arial, sans-serif;
+  touch-action: none;
+}
+
+canvas {
+  display: block;
+  width: 100vw;
+  height: 100dvh;
+  touch-action: none;
+}
+
+#ui {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  text-align: center;
+}
+
+#score {
+  position: absolute;
+  top: 24px;
+  left: 0;
+  right: 0;
+  font-size: 24px;
+  font-weight: bold;
+  color: #f1e2c6;
+  text-shadow: none;
+}
+
+#message {
+  position: absolute;
+  top: 43%;
+  width: 100%;
+  font-size: 20px;
+  font-weight: bold;
+  color: #f5d6a2;
+  text-shadow: none;
+}

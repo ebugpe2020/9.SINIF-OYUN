@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>9. Sınıf Projesi</title>
+<style>
+:root{--c:#53ffe5;--p:#ff4fb8;--bg:#070a12;--card:#101827}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#fff;font-family:Arial,sans-serif;touch-action:manipulation}
+button{font:inherit;cursor:pointer;touch-action:manipulation}
+#app{width:100%;max-width:1000px;margin:auto;min-height:100dvh;padding:16px;display:flex;flex-direction:column}
+header{display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:1px solid #1f2c3f}
+.logo{font-size:clamp(20px,5vw,26px);font-weight:900;letter-spacing:3px;color:var(--c)}
+.small{font-size:10px;color:#8192aa;letter-spacing:2px}
+h1{font-size:clamp(24px,6vw,36px);margin:8px 0}
+.sub{color:#98a8bd;line-height:1.5;font-size:13px}
+
+/* Ana Hub Seçim Ekranı */
+#hub-screen{flex:1;display:flex;flex-direction:column;justify-content:center;gap:18px;padding:20px 0}
+.mode-card{
+  background:var(--card);border:1px solid #26364b;border-radius:12px;padding:20px;
+  cursor:pointer;display:flex;align-items:center;gap:16px;
+}
+.mode-card:active{border-color:var(--c);background:#132333}
+.mode-icon{font-size:36px;min-width:55px;height:55px;background:#182538;border-radius:10px;display:grid;place-items:center}
+.mode-card h2{margin:0 0 5px 0;font-size:18px;color:var(--c)}
+.mode-card p{margin:0;font-size:12px;color:#98a8bd;line-height:1.4}
+
+/* Ortak Butonlar ve Girdiler */
+button.primary{width:100%;padding:14px;border:0;border-radius:8px;background:var(--c);color:#071018;font-weight:900;letter-spacing:2px}
+input,select{background:#101827;color:white;border:1px solid #33465d;border-radius:7px;padding:11px;width:100%;font-size:14px;margin-bottom:12px}
+.nav-back{background:none;border:0;color:#9aabc0;padding:8px 0;font-size:13px;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+
+/* 1. MOD: SORU-CEVAP SİSTEMİ */
+#quiz-section{display:none;flex:1;flex-direction:column;justify-content:center;max-width:600px;margin:auto;width:100%}
+.quiz-card{background:var(--card);border:1px solid #233448;border-radius:12px;padding:20px}
+.badge{display:inline-block;background:#132c38;color:var(--c);padding:4px 10px;border-radius:8px;font-size:11px;font-weight:bold;margin-bottom:10px}
+.opt-btn{display:block;width:100%;background:#182438;border:1px solid #33465d;color:#fff;border-radius:8px;padding:12px;margin:8px 0;text-align:left;font-size:14px}
+.opt-btn:active{background:#223652}
+.feedback-box{padding:12px;border-radius:8px;font-size:13px;line-height:1.4;margin-top:12px;display:none}
+
+/* 2. MOD: RİTİM OYUNU SİSTEMİ */
+#rhythm-section{display:none;flex:1;flex-direction:column}
+.songs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:12px 0}
+.song{min-width:0;text-align:left;padding:11px 8px;background:#101827;color:white;border:1px solid #26364b;border-radius:9px}
+.song.active{border:1px solid var(--c);background:#10272d;box-shadow:0 0 14px #53ffe51b}
+.cover{height:50px;border-radius:6px;margin-bottom:8px;display:grid;place-items:center;font-size:24px;background:linear-gradient(135deg,#102f3d,#29203c)}
+.song b{display:block;font-size:11px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.song small{font-size:9px;color:#9aaac0}
+.hud{display:flex;justify-content:space-between;gap:10px;margin:16px 0 10px}
+.hud small{display:block;color:#8d9bb0;font-size:10px;letter-spacing:1px;margin-bottom:4px}
+.hud strong{font-size:clamp(17px,4vw,24px)}
+#score{color:var(--c)}#combo{color:var(--p)}
+#field{position:relative;height:clamp(230px,44vh,420px);overflow:hidden;border:1px solid #233448;border-radius:9px;background:radial-gradient(ellipse at 85% 50%,#122433,transparent 70%),#090f1b;touch-action:none;user-select:none}
+#field:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(to bottom,transparent 0,transparent calc(20% - 1px),#24364a55 calc(20% - 1px),#24364a55 20%);pointer-events:none}
+#hitline{position:absolute;left:20%;top:0;bottom:0;width:3px;background:var(--c);box-shadow:0 0 15px var(--c);z-index:2}
+.note{position:absolute;left:0;top:0;transform:translateY(-50%);height:30px;width:30px;display:grid;place-items:center;color:var(--c);font-size:24px;text-shadow:0 0 14px var(--c);pointer-events:none;will-change:left}
+.note.hold{height:12px;border-radius:12px;background:var(--p);box-shadow:0 0 12px #ff4fb866}
+.note.hold:before{content:"";position:absolute;left:0;top:50%;width:15px;height:30px;transform:translateY(-50%);border-radius:4px;background:#fff;box-shadow:0 0 12px var(--p)}
+#feedback{height:35px;display:grid;place-items:center;color:#bdccdd;font-size:12px;font-weight:bold;letter-spacing:1px}
+#tap{min-height:65px;width:100%;background:#10262e;color:var(--c);border:1px solid var(--c);border-radius:8px;font-weight:900;letter-spacing:2px;user-select:none}
+#tap.pressing{background:#1d464c}
+.spinner{width:28px;height:28px;border:3px solid #33465d;border-top:3px solid var(--c);border-radius:50%;animation:spin 1s linear infinite;margin:15px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+ <div class="logo">MODLAR</div>
+ <div class="small">9. SINIF PROJESİ</div>
+</header>
+
+<!-- ANA HUB SEÇİM EKRANI -->
+<section id="hub-screen">
+ <div>
+  <div class="small">MOD SEÇİMİ</div>
+  <h1>NE YAPMAK İSTERSİN?</h1>
+  <div class="sub">Dilersen Din Kültürü sorularıyla kendini sına, dilersen ritim modunda reflekslerini test et!</div>
+ </div>
+
+ <div id="card-quiz" class="mode-card">
+  <div class="mode-icon">📚</div>
+  <div>
+   <h2>1. Soru-Cevap Modu</h2>
+   <p>Cahiliye ve Mekke dönemi MEB müfredatı soruları. İster yapay zekâ, ister dahili soru bankası.</p>
+  </div>
+ </div>
+
+ <div id="card-rhythm" class="mode-card">
+  <div class="mode-icon">⚡</div>
+  <div>
+   <h2>2. Ritim Modu</h2>
+   <p>Sorular olmadan, kesintisiz 120-180 BPM tempolu dokunmatik ritim oyunu.</p>
+  </div>
+ </div>
+</section>
+
+<!-- 1. BÖLÜM: SORU CEVAP ALANI -->
+<section id="quiz-section">
+ <button id="btn-back-quiz" class="nav-back">◀ ANA MENÜYE DÖN</button>
+ 
+ <div class="quiz-card">
+  <!-- Soru Ayar Ekranı -->
+  <div id="quiz-setup">
+   <h2 style="margin-top:0;color:var(--c)">Soru Modu Ayarları</h2>
+   <label class="small">ÜNİTE SEÇİMİ:</label>
+   <select id="quiz-unit">
+    <option value="cahiliye">1. Ünite: Cahiliye Dönemi ve Arap Yarımadası</option>
+    <option value="vahiy">2. Ünite: Peygamberlik ve İlk Vahiy</option>
+    <option value="mekke">3. Ünite: Mekke Dönemi ve Boykot Yılları</option>
+    <option value="all">🎲 Tüm Mekke & Cahiliye (Karışık)</option>
+   </select>
+
+   <label class="small">AI Api Key(Boşsa Mebden Sorar):</label>
+   <input type="password" id="gemini-key" placeholder="AIzaSy... (Boşsa hazır MEB havuzundan sorar)">
+
+   <button id="btn-start-quiz" class="primary">SORU GETİR ▶</button>
+  </div>
+
+  <!-- Soru Gösterme Ekranı -->
+  <div id="quiz-play" style="display:none">
+   <div style="display:flex;justify-content:space-between;align-items:center;">
+    <div id="q-badge" class="badge">Ünite</div>
+    <small style="color:var(--c);font-weight:bold" id="q-score">Puan: 0</small>
+   </div>
+   <div id="quiz-spinner" class="spinner" style="display:none"></div>
+   <h3 id="q-text" style="font-size:15px;line-height:1.4;margin:12px 0">...</h3>
+   <div id="q-options"></div>
+   <div id="q-info" class="feedback-box"></div>
+   <button id="q-next" class="primary" style="display:none;margin-top:14px">SONRAKİ SORU ➔</button>
+  </div>
+ </div>
+</section>
+
+<!-- RİTİM -->
+<section id="rhythm-section">
+ <div id="rhythm-menu">
+  <button id="btn-back-rhythm-hub" class="nav-back">◀ ANA MENÜYE DÖN</button>
+  <h1>ŞARKI SEÇ</h1>
+  <div class="sub">Bölünmeden, kesintisiz ritme odaklan.</div>
+
+  <div class="songs">
+   <button class="song active" data-song="pulse">
+    <div class="cover">🏜️</div><b>1. Cahiliye</b><small>120 BPM</small>
+   </button>
+   <button class="song" data-song="rush">
+    <div class="cover">📖</div><b>2. İlk Vahiy</b><small>150 BPM</small>
+   </button>
+   <button class="song" data-song="void">
+    <div class="cover">⚔️</div><b>3. Mekke</b><small>180 BPM</small>
+   </button>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:15px">
+   <div><b>Akış Hızı</b></div>
+   <select id="speed" style="width:auto;margin:0">
+    <option value="1">Normal</option>
+    <option value="1.35" selected>Hızlı</option>
+    <option value="1.7">Çok Hızlı</option>
+   </select>
+  </div>
+  <button id="start-rhythm" class="primary">RİTMİ BAŞLAT ▶</button>
+ </div>
+
+ <div id="rhythm-game" style="display:none">
+  <div class="hud">
+   <div><small>SKOR</small><strong id="score">000000</strong></div>
+   <div><small>COMBO</small><strong id="combo">0</strong></div>
+   <div><small>İSABET</small><strong id="accuracy">100%</strong></div>
+  </div>
+  <div id="field"><div id="hitline"></div></div>
+  <div id="feedback">HEDEFİ BEKLE...</div>
+  <button id="tap">DOKUN / BASILI TUT</button>
+  <button id="back-rhythm-menu" style="display:block;margin:12px auto;background:none;border:0;color:#9aabc0;padding:8px">Ⅱ ŞARKI DEĞİŞTİR</button>
+ </div>
+</section>
+
+</div>
+
+<script>
+// Element seçici
+const $ = id => document.getElementById(id);
+
+// --- SAYFA GEÇİŞLERİ ---
+$("card-quiz").addEventListener("click", () => {
+  $("hub-screen").style.display = "none";
+  $("quiz-section").style.display = "flex";
+  $("quiz-setup").style.display = "block";
+  $("quiz-play").style.display = "none";
+});
+
+$("card-rhythm").addEventListener("click", () => {
+  $("hub-screen").style.display = "none";
+  $("rhythm-section").style.display = "flex";
+  $("rhythm-menu").style.display = "block";
+  $("rhythm-game").style.display = "none";
+});
+
+function goBackToHub() {
+  stopRhythm();
+  $("quiz-section").style.display = "none";
+  $("rhythm-section").style.display = "none";
+  $("hub-screen").style.display = "flex";
+}
+$("btn-back-quiz").addEventListener("click", goBackToHub);
+$("btn-back-rhythm-hub").addEventListener("click", goBackToHub);
+
+// ==========================================
+// 1. MOD: SORU-CEVAP SİSTEMİ
+// ==========================================
+const mebQuestions = {
+  cahiliye: [
+    { q: "Cahiliye Dönemi'nde mazlum ve yabancı tüccarları korumak amacıyla kurulan birliğin adı nedir?", o: ["Hilfü'l-Fudûl", "Dârü'n-Nedve", "Dârü'l-Erkam", "Ashâb-ı Uhdûd"], a: "Hilfü'l-Fudûl", i: "Hilfü'l-Fudûl (Erdemliler İttifakı), Mekke'de adaleti tesis etmek için kurulmuştur." },
+    { q: "Cahiliye'de putperestliği reddedip Hz. İbrahim'in tevhid inancına uyanlara ne ad verilirdi?", o: ["Hanif", "Sâbiî", "Mecûsî", "Rabbanî"], a: "Hanif", i: "Hanifler putlara tapmayan tevhid ehli kimselerdi." },
+    { q: "Kureyş kabilesinin savaş ve barış gibi mühim kararları aldığı meclis binası hangisidir?", o: ["Dârü'n-Nedve", "Kâbe", "Dârü'l-Erkam", "Hira"], a: "Dârü'n-Nedve", i: "Dârü'n-Nedve, Kureyş'in parlamentosu hükmündeydi." }
+  ],
+  vahiy: [
+    { q: "Peygamberimize ilk vahiy 610 yılında hangi mağarada inmiştir?", o: ["Hira Mağarası", "Sevr Mağarası", "Uhud Mağarası", "Nur Mağarası"], a: "Hira Mağarası", i: "İlk vahiy Alak Suresi'nin ilk 5 ayetidir." },
+    { q: "Gizli davet döneminde Müslümanların toplanıp eğitim gördüğü ilk merkez ev hangisidir?", o: ["Dârü'l-Erkam", "Dârü'n-Nedve", "Beytü'l-Hikme", "Hz. Hatice'nin Evi"], a: "Dârü'l-Erkam", i: "Erkam b. Ebi'l-Erkam'ın evi ilk tebliğ merkezidir." },
+    { q: "Aşağıdakilerden hangisi ilk dört Müslüman arasında yer almaz?", o: ["Hz. Ömer", "Hz. Hatice", "Hz. Ali", "Hz. Zeyd b. Harise"], a: "Hz. Ömer", i: "Hz. Ömer açık tebliğ döneminde sonradan Müslüman olmuştur." }
+  ],
+  mekke: [
+    { q: "Müşriklerin Müslümanlara uyguladığı ekonomik ve sosyal boykot kaç yıl sürmüştür?", o: ["3 Yıl", "1 Yıl", "5 Yıl", "7 Yıl"], a: "3 Yıl", i: "616-619 yılları arasında 3 yıl boyunca sürmüştür." },
+    { q: "Ebu Talib ile Hz. Hatice'nin peş peşe vefat ettiği yıla ne ad verilir?", o: ["Hüzün Yılı", "Fil Yılı", "Hicret Yılı", "Fetih Yılı"], a: "Hüzün Yılı", i: "Bu acı kayıplar nedeniyle Senetü'l-Hüzn (Hüzün Yılı) denilmiştir." },
+    { q: "Medine'ye ilk muallim (öğretmen) olarak gönderilen genç sahabi kimdir?", o: ["Mus'ab bin Umeyr", "Bilal-i Habeşi", "Zeyd bin Sabit", "Osman b. Maz'un"], a: "Mus'ab bin Umeyr", i: "Mus'ab b. Umeyr 1. Akabe Biatı'ndan sonra Medine'ye gönderilmiştir." }
+  ]
+};
+
+let quizScore = 0;
+let currentUnitChoice = "cahiliye";
+
+$("btn-start-quiz").addEventListener("click", () => {
+  quizScore = 0;
+  $("q-score").textContent = "Puan: 0";
+  currentUnitChoice = $("quiz-unit").value;
+  $("quiz-setup").style.display = "none";
+  $("quiz-play").style.display = "block";
+  loadNextQuizQuestion();
+});
+
+$("q-next").addEventListener("click", () => {
+  loadNextQuizQuestion();
+});
+
+async function loadNextQuizQuestion() {
+  $("q-options").innerHTML = "";
+  $("q-info").style.display = "none";
+  $("q-next").style.display = "none";
+  $("quiz-spinner").style.display = "block";
+  $("q-text").textContent = "Soru yükleniyor...";
+
+  const key = $("gemini-key").value.trim();
+  let questionData = null;
+
+  // 1. API Anahtarı girilmişse Yapay Zekâdan iste
+  if (key) {
+    try {
+      const topicTitle = $("quiz-unit").selectedOptions[0].text;
+      const prompt = `Sen 9. sınıf Din Kültürü öğretmenisin. "${topicTitle}" konusu hakkında 4 şıklı 1 test sorusu hazırla. SADECE bu JSON formatında cevap ver:
+{"question":"...","options":["A şıkkı","B şıkkı","C şıkkı","D şıkkı"],"answer":"Doğru şık metni","info":"1 cümlelik açıklama"}`;
+
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } })
+      });
+      const data = await res.json();
+      questionData = JSON.parse(data.candidates[0].content.parts[0].text);
+    } catch(err) {
+      console.warn("AI çağrısı başarısız, yerel havuza geçildi:", err);
+    }
+  }
+
+  // 2. API anahtarı yoksa veya hata verdiyse yerel havuzdan çek
+  if (!questionData) {
+    let pool = [];
+    if (currentUnitChoice === "all") {
+      pool = [...mebQuestions.cahiliye, ...mebQuestions.vahiy, ...mebQuestions.mekke];
+    } else {
+      pool = mebQuestions[currentUnitChoice];
+    }
+    const item = pool[Math.floor(Math.random() * pool.length)];
+    questionData = { question: item.q, options: item.o, answer: item.a, info: item.i };
+  }
+
+  $("quiz-spinner").style.display = "none";
+  $("q-badge").textContent = currentUnitChoice.toUpperCase();
+  $("q-text").textContent = questionData.question;
+
+  const shuffled = [...questionData.options].sort(() => Math.random() - 0.5);
+  shuffled.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.className = "opt-btn";
+    btn.textContent = opt;
+    btn.onclick = () => {
+      document.querySelectorAll(".opt-btn").forEach(b => b.disabled = true);
+      $("q-info").style.display = "block";
+      if (opt === questionData.answer) {
+        quizScore += 10;
+        $("q-score").textContent = `Puan: ${quizScore}`;
+        btn.style.background = "#065f46";
+        $("q-info").style.background = "#064e3b";
+        $("q-info").style.color = "#6ee7b7";
+        $("q-info").innerHTML = `<b>Tebrikler, Doğru!</b><br>${questionData.info}`;
+      } else {
+        btn.style.background = "#7f1d1d";
+        $("q-info").style.background = "#450a0a";
+        $("q-info").style.color = "#fca5a5";
+        $("q-info").innerHTML = `<b>Yanlış!</b> Doğru cevap: <u>${questionData.answer}</u><br>${questionData.info}`;
+      }
+      $("q-next").style.display = "block";
+    };
+    $("q-options").appendChild(btn);
+  });
+}
+
+// ==========================================
+// 2. MOD: SAF RİTİM OYUNU
+// ==========================================
+const field = $("field"), tapButton = $("tap");
+const songs = {
+  pulse: { bpm: 120, notes: [0,1,2,0,3,1,2,4] },
+  rush:  { bpm: 150, notes: [0,2,1,4,3,0,2,4,1,3] },
+  void:  { bpm: 180, notes: [0,3,1,4,2,0,4,1,3,2] }
+};
+let selectedSong = "pulse", running = false, holding = false;
+let score = 0, combo = 0, hits = 0, attempts = 0;
+let notes = [], raf = 0, last = 0, clock = 0, beatIndex = 0;
+let audio = null, audioTimer = null, nextBeat = 0;
+let holdNote = null, holdPoints = 0, holdElapsed = 0;
+let speedFactor = 1.35;
+const hitRatio = 0.20;
+
+document.querySelectorAll(".song").forEach(btn => {
+  btn.addEventListener("click", () => {
+    selectedSong = btn.dataset.song;
+    document.querySelectorAll(".song").forEach(b => b.classList.toggle("active", b === btn));
+  });
+});
+
+function hud() {
+  $("score").textContent = String(score).padStart(6, "0");
+  $("combo").textContent = combo;
+  $("accuracy").textContent = (attempts ? Math.round(hits / attempts * 100) : 100) + "%";
+}
+function message(text) { $("feedback").textContent = text; }
+function clearNotes() { notes.forEach(n => n.el.remove()); notes = []; }
+
+function newNote() {
+  const data = songs[selectedSong];
+  const lane = data.notes[beatIndex % data.notes.length];
+  beatIndex++;
+  const hold = (beatIndex % 7 === 0);
+  const el = document.createElement("div");
+  el.className = "note" + (hold ? " hold" : "");
+  if (!hold) el.textContent = "✦";
+  const y = (lane + 0.5) * field.clientHeight / 5;
+  const length = hold ? Math.min(field.clientWidth * 0.38, 180) : 0;
+  el.style.top = y + "px";
+  el.style.width = (hold ? length : 30) + "px";
+  el.style.left = field.clientWidth + 25 + "px";
+  field.appendChild(el);
+  notes.push({ el, x: field.clientWidth + 25, y, hold, length, judged: false });
+}
+
+function scheduleBeat() {
+  if (!running) return;
+  const interval = 60000 / songs[selectedSong].bpm;
+  while (nextBeat < audio.currentTime + 0.15) {
+    const when = nextBeat;
+    const osc = audio.createOscillator();
+    const gain = audio.createGain();
+    osc.type = "triangle";
+    osc.frequency.value = (beatIndex % 4 === 0) ? 440 : 220;
+    gain.gain.setValueAtTime(0.0001, when);
+    gain.gain.exponentialRampToValueAtTime(0.035, when + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.12);
+    osc.connect(gain); gain.connect(audio.destination);
+    osc.start(when); osc.stop(when + 0.13);
+    nextBeat += interval / 1000;
+  }
+  audioTimer = setTimeout(scheduleBeat, 40);
+}
+
+function startRhythm() {
+  stopRhythm();
+  score = 0; combo = 0; hits = 0; attempts = 0;
+  clock = 0; last = 0; beatIndex = 0; holding = false; holdNote = null;
+  speedFactor = Number($("speed").value);
+  clearNotes(); hud();
+  $("rhythm-menu").style.display = "none";
+  $("rhythm-game").style.display = "block";
+  message("HEDEFLERİ BEKLE...");
+  running = true;
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) {
+      if (audio) audio.close();
+      audio = new AC();
+      audio.resume();
+      nextBeat = audio.currentTime + 0.1;
+      scheduleBeat();
+    }
+  } catch (e) { audio = null; }
+  newNote();
+  raf = requestAnimationFrame(frame);
+}
+
+function stopRhythm() {
+  running = false;
+  cancelAnimationFrame(raf);
+  clearTimeout(audioTimer);
+  releaseHold();
+  if (audio) { audio.close().catch(()=>{}); audio = null; }
+}
+
+function frame(time) {
+  if (!running) return;
+  if (!last) last = time;
+  const dt = Math.min(time - last, 35);
+  last = time; clock += dt;
+  const bpm = songs[selectedSong].bpm;
+  const interval = 60000 / bpm;
+  if (clock >= interval) {
+    clock -= interval;
+    if (notes.length < 7) newNote();
+  }
+  const velocity = (350 + bpm * 0.7) * speedFactor;
+  const hitX = field.clientWidth * hitRatio;
+  for (let i = notes.length - 1; i >= 0; i--) {
+    const n = notes[i];
+    n.x -= velocity * dt / 1000;
+    n.el.style.left = n.x + "px";
+    if (n.hold && holding && holdNote === n) {
+      holdElapsed += dt;
+      holdPoints += dt * 0.10;
+      score += Math.floor(dt * 0.10);
+      hud();
+      if (n.x + n.length <= hitX) {
+        hits++; attempts++; combo++;
+        score += 100; hud();
+        message("HOLD TAMAMLANDI! +100");
+        n.el.remove(); notes.splice(i, 1);
+        holding = false; holdNote = null; tapButton.classList.remove("pressing");
+      }
+    } else if (n.x < -n.length - 40) {
+      n.el.remove(); notes.splice(i, 1);
+      if (holding && holdNote === n) { holding = false; holdNote = null; }
+      if (!n.judged) { combo = 0; attempts++; message("KAÇTI!"); hud(); }
+    }
+  }
+  raf = requestAnimationFrame(frame);
+}
+
+function getClosest() {
+  const hitX = field.clientWidth * hitRatio;
+  let best = null, distance = Infinity;
+  for (const n of notes) {
+    if (n.judged || n.hold) continue;
+    const d = Math.abs(n.x - hitX);
+    if (d < distance) { distance = d; best = n; }
+  }
+  return { note: best, distance };
+}
+
+function pressHit() {
+  if (!running || holding) return;
+  const hitX = field.clientWidth * hitRatio;
+  const holdCandidate = notes.find(n => n.hold && !n.judged && Math.abs(n.x - hitX) <= 32);
+  if (holdCandidate) {
+    holding = true; holdNote = holdCandidate; holdElapsed = 0; holdPoints = 0;
+    holdCandidate.judged = true;
+    tapButton.classList.add("pressing");
+    message("BASILI TUT...");
+    return;
+  }
+  const { note, distance } = getClosest();
+  attempts++;
+  if (note && distance <= 48) {
+    note.judged = true; note.el.remove(); notes = notes.filter(n => n !== note);
+    hits++; combo++;
+    if (distance <= 15) { score += 100; message("PERFECT +100"); }
+    else if (distance <= 30) { score += 70; message("GREAT +70"); }
+    else { score += 40; message("GOOD +40"); }
+  } else { combo = 0; message("MISS!"); }
+  hud();
+}
+
+function releaseHold() {
+  if (!holding) return;
+  holding = false;
+  tapButton.classList.remove("pressing");
+  if (holdNote) {
+    if (holdNote.x + holdNote.length > field.clientWidth * hitRatio) {
+      holdNote.judged = true; holdNote.el.remove();
+      notes = notes.filter(n => n !== holdNote);
+      combo = 0; attempts++; message("ERKEN BIRAKTIN!"); hud();
+    }
+  }
+  holdNote = null;
+}
+
+$("start-rhythm").addEventListener("click", startRhythm);
+$("back-rhythm-menu").addEventListener("click", () => {
+  stopRhythm();
+  $("rhythm-game").style.display = "none";
+  $("rhythm-menu").style.display = "block";
+});
+
+tapButton.addEventListener("pointerdown", e => { e.preventDefault(); pressHit(); });
+field.addEventListener("pointerdown", e => { e.preventDefault(); pressHit(); });
+window.addEventListener("pointerup", releaseHold);
+window.addEventListener("pointercancel", releaseHold);
+window.addEventListener("blur", releaseHold);
+window.addEventListener("pagehide", stopRhythm);
+</script>
+</body>
+</html>
